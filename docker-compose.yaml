@@ -1,0 +1,32 @@
+services:
+  product-db:
+    image: postgres:14
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=product
+    healthcheck:
+      test: pg_isready -U postgres -d product -h localhost -p 5432
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  product:
+    restart: unless-stopped
+    build:
+      context: ./product
+      dockerfile: ../production-container/Dockerfile-spring
+    depends_on:
+      product-db:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
+volumes:
+  postgres-data:
+  

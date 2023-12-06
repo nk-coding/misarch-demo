@@ -3,21 +3,41 @@ sources:
     handler:
       openapi:
         source: http://localhost:8080/api-schema
+    transforms:
+      - rename:
+          renames:
+            - from:
+                type: Query
+                field: getProducts
+              to:
+                type: Query
+                field: products
+            - from:
+                type: Query
+                field: getProduct
+              to:
+                type: Query
+                field: product
+      - filterSchema:
+          filters:
+          - Query.!getProductVariants
+      - typeMerging:
+          queryFields:
+            - queryFieldName: product
+              keyField: id
 transforms:
   - rename:
       renames:
         - from:
-            type: Query
-            field: getProducts
+            type: (.*)DTO
           to:
-            type: Query
-            field: products
+            type: $1
+          useRegExpForTypes: true
         - from:
-            type: Query
-            field: getProduct
+            type: ProductDetail
           to:
-            type: Query
-            field: product
-  - filterSchema:
-      filters:
-        - Query.!getProductVariants
+            type: Product
+  - typeMerging:
+      queryFields:
+        - queryFieldName: product
+          keyField: id

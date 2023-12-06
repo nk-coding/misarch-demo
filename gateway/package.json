@@ -13,6 +13,7 @@
     "@graphql-mesh/openapi": "^0.97.1",
     "@graphql-mesh/transform-filter-schema": "^0.96.1",
     "@graphql-mesh/transform-rename": "^0.96.1",
+    "@graphql-mesh/transform-type-merging": "^0.96.1",
     "graphql": "^16.8.1"
   }
 }

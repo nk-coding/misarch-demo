@@ -27,6 +27,12 @@ services:
       - 8080:8080
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
+    healthcheck:
+      test: wget http://localhost:8080/api-schema || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
 volumes:
   postgres-data:
   

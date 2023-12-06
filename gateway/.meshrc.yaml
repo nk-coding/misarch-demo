@@ -1,0 +1,23 @@
+sources:
+  - name: Order
+    handler:
+      openapi:
+        source: http://localhost:8080/api-schema
+transforms:
+  - rename:
+      renames:
+        - from:
+            type: Query
+            field: getProducts
+          to:
+            type: Query
+            field: products
+        - from:
+            type: Query
+            field: getProduct
+          to:
+            type: Query
+            field: product
+  - filterSchema:
+      filters:
+        - Query.!getProductVariants

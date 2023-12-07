@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copy the frontend source code into the container
 COPY frontend /app
-RUN rm .env
 
 # Install dependencies and build the frontend
 RUN npm ci

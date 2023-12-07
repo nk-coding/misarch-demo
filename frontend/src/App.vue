@@ -57,4 +57,8 @@ html,
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.title-bar {
+    background-color: lightgray !important;
+}
 </style>

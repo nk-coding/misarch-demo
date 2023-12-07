@@ -22,5 +22,13 @@ export default createVuetify({
                 }
             }
         }
+    },
+    defaults: {
+        VTextField: {
+            density: "comfortable"
+        },
+        VTextarea: {
+            density: "comfortable"
+        }
     }
 });

@@ -7,6 +7,9 @@ sources:
       openapi:
         source: http://localhost:9080/v1.0/invoke/product/method/api-schema
         endpoint: http://localhost:9080/v1.0/invoke/product/method/
+        operationHeaders:
+          traceparent: "{context.headers['traceparent']}"
+          tracestate: "{context.headers['tracestate']}"
     transforms:
       - rename:
           renames:
@@ -33,6 +36,9 @@ sources:
       openapi:
         source: http://localhost:9080/v1.0/invoke/inventory/method/api-schema
         endpoint: http://localhost:9080/v1.0/invoke/inventory/method/
+        operationHeaders:
+          traceparent: "{context.headers['traceparent']}"
+          tracestate: "{context.headers['tracestate']}"
     transforms:
       - rename:
         - from:

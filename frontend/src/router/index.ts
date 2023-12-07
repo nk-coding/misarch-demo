@@ -4,15 +4,15 @@ import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
 const routes: RouteRecordRaw[] = [
     {
         path: "/product",
-        component: () => import("@/views/ProductsView.vue"),
+        component: () => import("@/views/ProductsView.vue")
     },
     {
         path: "/product/:product",
-        component: () => import("@/views/ProductView.vue"),
+        component: () => import("@/views/ProductView.vue")
     },
     {
         path: "/product/:product/:variant",
-        component: () => import("@/views/ProductVariantView.vue"),
+        component: () => import("@/views/ProductVariantView.vue")
     }
 ];
 

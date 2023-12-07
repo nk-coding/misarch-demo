@@ -1,8 +1,12 @@
+serve:
+  hostname: 0.0.0.0
+  playground: true
 sources:
-  - name: Order
+  - name: Product
     handler:
       openapi:
-        source: http://localhost:8080/api-schema
+        source: http://localhost:9080/v1.0/invoke/product/method/api-schema
+        endpoint: http://localhost:9080/v1.0/invoke/product/method/
     transforms:
       - rename:
           renames:
@@ -18,13 +22,18 @@ sources:
               to:
                 type: Query
                 field: product
-      - filterSchema:
-          filters:
-          - Query.!getProductVariants
-      - typeMerging:
-          queryFields:
-            - queryFieldName: product
-              keyField: id
+  - name: Inventory
+    handler:
+      openapi:
+        source: http://localhost:9080/v1.0/invoke/inventory/method/api-schema
+        endpoint: http://localhost:9080/v1.0/invoke/inventory/method/
+    transforms:
+      - rename:
+        - from:
+            type: query_getInventoryItems_items_inventoryState
+          to:
+            type: InventoryState
+
 transforms:
   - rename:
       renames:
@@ -33,11 +42,31 @@ transforms:
           to:
             type: $1
           useRegExpForTypes: true
-        - from:
-            type: ProductDetail
-          to:
-            type: Product
-  - typeMerging:
-      queryFields:
-        - queryFieldName: product
-          keyField: id
+  - filterSchema:
+      filters:
+        - Query.!getProductVariants
+        - Query.!getInventoryItems
+additionalTypeDefs: |
+  extend type ProductDTO {
+    variants: [ProductVariantDTO] @resolveTo(
+      sourceName: "Product",
+      sourceTypeName: "Query",
+      sourceFieldName: "getProductVariants",
+      requiredSelectionSet: "{ id }"
+      sourceArgs: {
+        id: "{root.id}"
+      }
+    )
+  }
+
+  extend type ProductVariantDTO {
+    items: [InventoryItemDTO] @resolveTo(
+      sourceName: "Inventory",
+      sourceTypeName: "Query",
+      sourceFieldName: "getInventoryItems",
+      requiredSelectionSet: "{ id }"
+      sourceArgs: {
+        id: "{root.id}"
+      }
+    )
+  }

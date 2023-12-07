@@ -1,11 +1,38 @@
 services:
+  gateway:
+    restart: unless-stopped
+    build:
+      context: ./gateway
+      dockerfile: ../production-container/Dockerfile-gateway
+    depends_on:
+      product:
+        condition: service_healthy
+      inventory:
+        condition: service_healthy
+    ports:
+      - 8080:4000
+      - 9080:9080
+    networks:
+      - dapr-network
+  gateway-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "--app-id", "gateway",
+      "--app-port", "4000",
+      "--dapr-http-port", "9080",
+      "-placement-host-address", "placement:50006",
+    ]
+    depends_on:
+      - gateway
+    network_mode: "service:gateway"
   product-db:
     image: postgres:14
     restart: unless-stopped
     ports:
       - 5432:5432
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - product-db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -15,6 +42,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - dapr-network
   product:
     restart: unless-stopped
     build:
@@ -24,7 +53,7 @@ services:
       product-db:
         condition: service_healthy
     ports:
-      - 8080:8080
+      - 8081:8080
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
     healthcheck:
@@ -33,6 +62,79 @@ services:
       timeout: 10s
       retries: 20
       start_period: 3s
+    networks:
+      - dapr-network
+  product-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "--app-id", "product",
+      "--app-port", "8080",
+      "--dapr-http-port", "9080",
+      "-placement-host-address", "placement:50006",
+    ]
+    depends_on:
+      - product
+    network_mode: "service:product"
+  inventory-db:
+    image: postgres:14
+    restart: unless-stopped
+    ports:
+      - 5433:5432
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=inventory
+    healthcheck:
+      test: pg_isready -U postgres -d inventory -h localhost -p 5432
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - dapr-network
+  inventory:
+    restart: unless-stopped
+    build:
+      context: ./inventory
+      dockerfile: ../production-container/Dockerfile-spring
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    ports:
+      - 8082:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://inventory-db:5432/inventory
+    healthcheck:
+      test: wget http://localhost:8080/api-schema || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
+    networks:
+      - dapr-network
+  inventory-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "--app-id", "inventory",
+      "--app-port", "8080",
+      "--dapr-http-port", "9080",
+      "-placement-host-address", "placement:50006",
+    ]
+    depends_on:
+      - inventory
+    network_mode: "service:inventory"
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
+    networks:
+      - dapr-network
 volumes:
-  postgres-data:
-  
+  product-db-data:
+  inventory-db-data:
+networks:
+  dapr-network:

@@ -1,4 +1,4 @@
-package org.demo.product.model
+package org.demo.inventory.model
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -7,12 +7,10 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 
 @Entity
-class Product(
-    val name: String,
-    val description: String,
+class InventoryItem(
+    val productVersionId: Int,
+    val inventoryState: InventoryState,
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int?=null,
-    @OneToMany(mappedBy = "product")
-    var variants: Set<ProductVariant> = mutableSetOf()
 )

@@ -3,7 +3,6 @@ package org.demo.product.controller
 import org.demo.product.dto.input.CreateProductRequest
 import org.demo.product.dto.input.CreateProductVariantRequest
 import org.demo.product.dto.output.ProductDTO
-import org.demo.product.dto.output.ProductDetailDTO
 import org.demo.product.dto.output.ProductVariantDTO
 import org.demo.product.model.Product
 import org.demo.product.model.ProductVariant
@@ -27,12 +26,11 @@ class ProductController(
     fun getProduct(
         @PathVariable
         id: Int
-    ): ProductDetailDTO {
+    ): ProductDTO {
         return productRepository.findById(id).map {
-            ProductDetailDTO(it.id!!,
+            ProductDTO(it.id!!,
                 it.name,
-                it.description,
-                it.variants.map { variant -> ProductVariantDTO(variant.id!!, variant.name, variant.description) })
+                it.description)
         }.orElseThrow()
     }
 

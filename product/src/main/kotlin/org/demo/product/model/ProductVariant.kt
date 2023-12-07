@@ -13,7 +13,6 @@ class ProductVariant(
     val name: String,
     val description: String,
     @ManyToOne
-    @MapsId("id")
     @JoinColumn(name = "product_id")
     val product: Product,
     @Id

@@ -1,4 +1,13 @@
 services:
+  frontend:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./production-container/Dockerfile-vue
+    ports:
+      - "4200:80"
+    networks:
+      - dapr-network
   gateway:
     restart: unless-stopped
     build:
@@ -99,7 +108,21 @@ services:
       - "50006:50006"
     networks:
       - dapr-network
-  
+  frontend-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "--app-id", "frontend",
+      "--app-port", "80",
+      "--dapr-http-port", "9080",
+      "-placement-host-address", "placement:50006",
+      "--config", "/config.yaml"
+    ]
+    volumes:
+      - "./dapr-config.yaml:/config.yaml"
+    depends_on:
+      - frontend
+    network_mode: "service:frontend"
   gateway-dapr:
     image: "daprio/daprd:edge"
     command: [

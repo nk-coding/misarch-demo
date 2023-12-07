@@ -22,6 +22,12 @@ sources:
               to:
                 type: Query
                 field: product
+            - from:
+                type: Query
+                field: getProductVariant
+              to:
+                type: Query
+                field: productVariant
   - name: Inventory
     handler:
       openapi:

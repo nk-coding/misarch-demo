@@ -1,0 +1,58 @@
+query getProducts {
+    products {
+        ...ProductInfo
+    }
+}
+
+query getProduct($id: Int!) {
+    product(id: $id) {
+        ...ProductInfo
+        variants {
+            ...ProductVariantInfo
+        }
+    }
+}
+
+query getProductVariant($id: Int!) {
+    productVariant(id: $id) {
+        ...ProductVariantInfo
+        items {
+            ...InventoryItemInfo
+        }
+    }
+}
+
+mutation createProduct($name: String!, $description: String!) {
+    createProduct(input: { name: $name, description: $description }) {
+        ...ProductInfo
+    }
+}
+
+mutation createProductVariant($product: Int! $name: String!, $description: String!) {
+    createProductVariant(id: $product, input: { name: $name, description: $description }) {
+        ...ProductVariantInfo
+    }
+}
+
+mutation createInventoryItem($productVariant: Int!) {
+    createInventoryItem(id: $productVariant) {
+        ...InventoryItemInfo
+    }
+}
+
+fragment ProductInfo on Product {
+    id
+    name
+    description
+}
+
+fragment ProductVariantInfo on ProductVariant {
+    id
+    name
+    description
+}
+
+fragment InventoryItemInfo on InventoryItem {
+    id
+    inventoryState
+}

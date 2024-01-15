@@ -1,13 +1,4 @@
 services:
-  frontend:
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: ./production-container/Dockerfile-vue
-    ports:
-      - "4200:80"
-    networks:
-      - dapr-network
   gateway:
     restart: unless-stopped
     build:
@@ -108,21 +99,6 @@ services:
       - "50006:50006"
     networks:
       - dapr-network
-  frontend-dapr:
-    image: "daprio/daprd:edge"
-    command: [
-      "./daprd",
-      "--app-id", "frontend",
-      "--app-port", "80",
-      "--dapr-http-port", "9080",
-      "-placement-host-address", "placement:50006",
-      "--config", "/config.yaml"
-    ]
-    volumes:
-      - "./dapr-config.yaml:/config.yaml"
-    depends_on:
-      - frontend
-    network_mode: "service:frontend"
   gateway-dapr:
     image: "daprio/daprd:edge"
     command: [
@@ -130,13 +106,16 @@ services:
       "--app-id", "gateway",
       "--app-port", "4000",
       "--dapr-http-port", "9080",
-      "-placement-host-address", "placement:50006",
-      "--config", "/config.yaml"
+      "--placement-host-address", "placement:50006",
+      "--config", "/config.yaml",
+      "--resources-path", "/components"
     ]
     volumes:
       - "./dapr-config.yaml:/config.yaml"
+      - "./components:/components"
     depends_on:
       - gateway
+      - redis
     network_mode: "service:gateway"
   product-dapr:
     image: "daprio/daprd:edge"
@@ -145,13 +124,16 @@ services:
       "--app-id", "product",
       "--app-port", "8080",
       "--dapr-http-port", "9080",
-      "-placement-host-address", "placement:50006",
-      "--config", "/config.yaml"
+      "--placement-host-address", "placement:50006",
+      "--config", "/config.yaml",
+      "--resources-path", "/components"
     ]
     volumes:
       - "./dapr-config.yaml:/config.yaml"
+      - "./components:/components"
     depends_on:
       - product
+      - redis
     network_mode: "service:product"
   inventory-dapr:
     image: "daprio/daprd:edge"
@@ -160,51 +142,21 @@ services:
       "--app-id", "inventory",
       "--app-port", "8080",
       "--dapr-http-port", "9080",
-      "-placement-host-address", "placement:50006",
-      "--config", "/config.yaml"
+      "--placement-host-address", "placement:50006",
+      "--config", "/config.yaml",
+      "--resources-path", "/components"
     ]
     volumes:
       - "./dapr-config.yaml:/config.yaml"
+      - "./components:/components"
     depends_on:
       - inventory
+      - redis
     network_mode: "service:inventory"
-
-  # Zipkin
-  zipkin-all-in-one:
-    image: openzipkin/zipkin:latest
-    restart: always
-    ports:
-      - "9411:9411"
-    networks:
-      - dapr-network
-
-  # Collector
-  otel-collector:
-    image: otel/opentelemetry-collector:0.67.0
-    restart: always
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "1888:1888"   # pprof extension
-      - "8888:8888"   # Prometheus metrics exposed by the collector
-      - "8889:8889"   # Prometheus exporter metrics
-      - "13133:13133" # health_check extension
-      - "4317:4317"   # OTLP gRPC receiver
-      - "55679:55679" # zpages extension
-    depends_on:
-      - prometheus
-      - zipkin-all-in-one
-    networks:
-      - dapr-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    restart: always
-    volumes:
-      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
     networks:
       - dapr-network
 volumes:

@@ -1,5 +1,6 @@
 package org.demo.product.controller
 
+import io.dapr.client.DaprClient
 import org.demo.product.dto.input.CreateProductRequest
 import org.demo.product.dto.input.CreateProductVariantRequest
 import org.demo.product.dto.output.ProductDTO
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/product")
 class ProductController(
     val productRepository: ProductRepository,
-    val productVariantRepository: ProductVariantRepository
+    val productVariantRepository: ProductVariantRepository,
+    val daprClient: DaprClient
 ) {
 
     @GetMapping("/")
@@ -50,7 +52,13 @@ class ProductController(
         request: CreateProductRequest
     ): ProductDTO {
         val product = Product(name = request.name, description = request.description)
-        return productRepository.save(product).let { ProductDTO(it.id!!, it.name, it.description) }
+        val savedProduct =  productRepository.save(product).let { ProductDTO(it.id!!, it.name, it.description) }
+        daprClient.publishEvent("pubsub", "product/product/create", savedProduct).doOnSuccess {
+            println("Published event")
+        }.doOnError {
+            println("Error publishing event")
+        }.subscribe()
+        return savedProduct
     }
 
     @PostMapping("/{id}/variant")

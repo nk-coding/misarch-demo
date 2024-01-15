@@ -17,3 +17,6 @@ spring:
 springdoc:
   api-docs:
     path: /api-schema
+dapr:
+  app-id: product-service
+  port: 8081

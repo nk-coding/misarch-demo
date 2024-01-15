@@ -4,9 +4,3 @@ metadata:
   name: daprConfig
   namespace: default
 spec:
-  tracing:
-    samplingRate: "1"
-    otel:
-      endpointAddress: otel-collector:4317
-      protocol: grpc
-      isSecure: false

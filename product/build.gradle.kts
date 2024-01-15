@@ -22,7 +22,8 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	runtimeOnly("org.postgresql:postgresql")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-
+	implementation("io.dapr:dapr-sdk-springboot:1.10.0")
+	implementation("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 kotlin {
